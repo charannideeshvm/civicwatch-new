@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - CivicWatch+</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body{background:#f5f7fb}.navbar{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stat-card,.section-card{border:0;border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+.assign-form{min-width:270px}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark"><div class="container">
+<a class="navbar-brand fw-bold" href="/admin">CivicWatch+</a>
+<div class="ms-auto d-flex align-items-center"><span class="text-light me-3">Admin Dashboard</span><a href="/logout" class="btn btn-outline-light btn-sm">Logout</a></div>
+</div></nav>
+<div class="container py-4">
+<div class="mb-4"><h2 class="fw-bold mb-1">System Administration</h2><p class="text-muted mb-0">Monitor complaints and assign them to officers.</p></div>
+<div class="row g-3 mb-4">
+<div class="col-md-3"><div class="card stat-card bg-primary text-white p-3 h-100"><div class="small">Total Complaints</div><div class="fs-2 fw-bold" th:text="${complaints.size()}">0</div></div></div>
+<div class="col-md-3"><div class="card stat-card p-3 h-100"><div class="small text-muted">Pending</div><div id="pendingCount" class="fs-2 fw-bold">0</div></div></div>
+<div class="col-md-3"><div class="card stat-card p-3 h-100"><div class="small text-muted">In Progress</div><div id="progressCount" class="fs-2 fw-bold">0</div></div></div>
+<div class="col-md-3"><div class="card stat-card p-3 h-100"><div class="small text-muted">Resolved</div><div id="resolvedCount" class="fs-2 fw-bold">0</div></div></div>
+</div>
+<div class="card section-card"><div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3"><div><h4 class="mb-1">Complaint Management</h4><small class="text-muted">Monitor complaints and assign/reassign officers. Status is read-only for Admin.</small></div><input id="complaintSearch" type="text" class="form-control" style="max-width:280px" placeholder="Search complaints..."></div>
+<div class="table-responsive"><table class="table table-hover align-middle" id="complaintTable"><thead class="table-light"><tr><th>ID</th><th>Title</th><th>Citizen</th><th>Status</th><th>Priority</th><th>Officer Assignment</th><th>Action</th></tr></thead><tbody>
+<tr th:each="c : ${complaints}">
+<td th:text="${c.id}"></td><td th:text="${c.title}"></td><td th:text="${c.citizen != null ? c.citizen.name : 'Unknown'}"></td>
+<td><span class="badge bg-secondary status-value" th:text="${c.status}"></span></td><td><span class="badge bg-dark" th:text="${c.priorityLevel}"></span></td>
+<td><div th:if="${c.assignedOfficer != null}" class="mb-2"><span class="badge bg-success">Assigned: <span th:text="${c.assignedOfficer.name}">Officer</span></span></div>
+<form action="/assign-complaint" method="post" class="d-flex gap-2 assign-form"><input type="hidden" name="complaintId" th:value="${c.id}"><select name="officerId" class="form-select form-select-sm" required><option value="" disabled selected>Select Officer</option><option th:each="officer : ${officers}" th:value="${officer.id}" th:text="${officer.name}">Officer</option></select><button type="submit" class="btn btn-sm btn-primary">Assign</button></form></td>
+<td><a th:href="@{'/complaint-details/' + ${c.id}}" class="btn btn-sm btn-info text-white">View Details</a></td>
+</tr></tbody></table></div>
+<div class="alert alert-light border mt-3 mb-0"><strong>Admin access:</strong> View all complaints and assign/reassign them to officers. Complaint status can only be changed by the assigned officer.</div>
+</div></div></div>
+<script>
+const rows=document.querySelectorAll('#complaintTable tbody tr');let pending=0,progress=0,resolved=0;rows.forEach(row=>{const status=row.querySelector('.status-value')?.textContent.trim().toUpperCase()||'';if(status==='PENDING')pending++;if(status==='IN_PROGRESS')progress++;if(status==='RESOLVED')resolved++;});document.getElementById('pendingCount').textContent=pending;document.getElementById('progressCount').textContent=progress;document.getElementById('resolvedCount').textContent=resolved;document.getElementById('complaintSearch').addEventListener('input',function(){const q=this.value.toLowerCase();rows.forEach(row=>row.style.display=row.textContent.toLowerCase().includes(q)?'':'none');});
+</script></body></html>

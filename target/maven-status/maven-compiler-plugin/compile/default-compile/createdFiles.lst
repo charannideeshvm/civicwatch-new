@@ -1,0 +1,14 @@
+com\civicwatch\service\UserService.class
+com\civicwatch\controller\WebController.class
+com\civicwatch\model\Role.class
+com\civicwatch\exception\ComplaintNotFoundException.class
+com\civicwatch\CivicWatchApplication.class
+com\civicwatch\model\User.class
+com\civicwatch\repository\ComplaintRepository.class
+com\civicwatch\config\SecurityConfig.class
+com\civicwatch\exception\GlobalExceptionHandler.class
+com\civicwatch\repository\UserRepository.class
+com\civicwatch\config\WebMvcConfig.class
+com\civicwatch\model\Complaint.class
+com\civicwatch\service\ComplaintService.class
+com\civicwatch\service\PriorityService.class

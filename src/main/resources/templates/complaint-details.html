@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complaint Details - CivicWatch+</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 300px; }
+        .complaint-img { max-width: 100%; height: auto; border-radius: 5px; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">CivicWatch+</a>
+        <div class="ms-auto">
+            <a href="javascript:history.back()" class="btn btn-outline-light btn-sm">Back</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 mb-5">
+    <h2>Complaint Details: <span th:text="${complaint.title}"></span></h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Information</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>ID:</strong> <span th:text="${complaint.id}"></span></li>
+                    <li class="list-group-item"><strong>Category:</strong> <span th:text="${complaint.category}"></span></li>
+                    <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-secondary" th:text="${complaint.status}"></span></li>
+                    <li class="list-group-item"><strong>Priority Level:</strong> <span class="badge bg-dark" th:text="${complaint.priorityLevel}"></span></li>
+                    <li class="list-group-item"><strong>Priority Score:</strong> <span th:text="${#numbers.formatDecimal(complaint.priorityScore, 1, 2)}"></span>/100</li>
+                    <li class="list-group-item"><strong>Reported On:</strong> <span th:text="${#temporals.format(complaint.createdAt, 'dd MMM yyyy HH:mm')}"></span></li>
+                    <li class="list-group-item"><strong>Last Updated:</strong> <span th:text="${#temporals.format(complaint.updatedAt, 'dd MMM yyyy HH:mm')}"></span></li>
+                </ul>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Description</div>
+                <div class="card-body">
+                    <p th:text="${complaint.description}"></p>
+                </div>
+            </div>
+
+            <div class="card mb-4" th:if="${complaint.resolutionNote != null}">
+                <div class="card-header bg-success text-white">Resolution Note</div>
+                <div class="card-body">
+                    <p th:text="${complaint.resolutionNote}"></p>
+                </div>
+            </div>
+            
+            <!-- Update Status Form: OFFICER ONLY. Admin and Citizen are read-only. -->
+            <div class="card mb-4" th:if="${user != null and user.role != null and user.role.name() == 'OFFICER'}">
+                <div class="card-header bg-warning">Update Status</div>
+                <div class="card-body">
+                    <form action="/update-status" method="post">
+                        <input type="hidden" name="id" th:value="${complaint.id}">
+                        <div class="mb-3">
+                            <label>Status</label>
+                            <select name="status" class="form-select">
+                                <option value="PENDING" th:selected="${complaint.status == 'PENDING'}">PENDING</option>
+                                <option value="UNDER_REVIEW" th:selected="${complaint.status == 'UNDER_REVIEW'}">UNDER_REVIEW</option>
+                                <option value="ASSIGNED" th:selected="${complaint.status == 'ASSIGNED'}">ASSIGNED</option>
+                                <option value="IN_PROGRESS" th:selected="${complaint.status == 'IN_PROGRESS'}">IN_PROGRESS</option>
+                                <option value="RESOLVED" th:selected="${complaint.status == 'RESOLVED'}">RESOLVED</option>
+                                <option value="REJECTED" th:selected="${complaint.status == 'REJECTED'}">REJECTED</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Resolution Note</label>
+                            <textarea name="note" class="form-control" rows="2" th:text="${complaint.resolutionNote}"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Image Evidence</div>
+                <div class="card-body text-center">
+                    <img th:if="${complaint.imagePath != null}" th:src="${complaint.imagePath}" class="complaint-img" alt="Complaint Image">
+                    <p th:if="${complaint.imagePath == null}">No image provided.</p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Location: <span th:text="${complaint.location}"></span></div>
+                <div class="card-body">
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var lat = /*[[${complaint.latitude}]]*/ 20.5937;
+    var lng = /*[[${complaint.longitude}]]*/ 78.9629;
+    
+    var map = L.map('map').setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+    L.marker([lat, lng]).addTo(map);
+    /*]]>*/
+</script>
+</body>
+</html>
